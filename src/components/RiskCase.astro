@@ -1,0 +1,65 @@
+---
+// One observed behavioral risk: which model, in which environment, under which
+// instruction, did what. Optional evidence (e.g. CameraViews) goes in the slot.
+interface Props {
+  title: string;
+  model: string;
+  environment: string;
+  instruction: string;
+  instructionType: "original" | "risky";
+  behavior: string;
+  risk: string;
+  rate: string;
+}
+
+const {
+  title,
+  model,
+  environment,
+  instruction,
+  instructionType,
+  behavior,
+  risk,
+  rate,
+} = Astro.props;
+
+const rows = [
+  { label: "模型", value: model },
+  { label: "环境", value: environment },
+  {
+    label:
+      instructionType === "risky"
+        ? "指令（风险指令，点名有害目标）"
+        : "指令（原任务指令，未改动）",
+    value: `"${instruction}"`,
+  },
+  { label: "观察到的行为", value: behavior },
+  { label: "风险", value: risk },
+];
+---
+
+<section
+  class="not-prose my-8 rounded-xl border border-zinc-300 p-5 dark:border-zinc-700"
+>
+  <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+    <h4 class="m-0 text-xl font-semibold">{title}</h4>
+    <span
+      class="rounded-full bg-red-100 px-3 py-1 text-sm font-semibold text-red-800 dark:bg-red-950 dark:text-red-200"
+    >
+      {rate}
+    </span>
+  </div>
+  <dl class="m-0 grid gap-x-6 gap-y-2 sm:grid-cols-[12rem_1fr]">
+    {
+      rows.map((row) => (
+        <>
+          <dt class="text-sm font-semibold text-zinc-500 dark:text-zinc-400">
+            {row.label}
+          </dt>
+          <dd class="m-0 text-base">{row.value}</dd>
+        </>
+      ))
+    }
+  </dl>
+  <slot />
+</section>

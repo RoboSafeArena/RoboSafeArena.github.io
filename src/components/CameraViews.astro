@@ -1,0 +1,45 @@
+---
+// Shows the head / left-wrist / right-wrist recordings of one episode side by
+// side (stacked on narrow screens). Pass `clips` instead to show arbitrary
+// labeled videos.
+interface Props {
+  head?: string;
+  leftWrist?: string;
+  rightWrist?: string;
+  clips?: { label: string; src: string }[];
+}
+
+const { head, leftWrist, rightWrist, clips } = Astro.props;
+
+const views = clips ?? [
+  { label: "头部相机", src: head },
+  { label: "左腕相机", src: leftWrist },
+  { label: "右腕相机", src: rightWrist },
+].filter((view): view is { label: string; src: string } => !!view.src);
+---
+
+<div
+  class:list={[
+    "not-prose my-6 grid gap-3",
+    views.length === 1 ? "mx-auto max-w-2xl" : views.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3",
+  ]}
+>
+  {
+    views.map((view) => (
+      <figure class="m-0 flex flex-col gap-1">
+        <video
+          class="aspect-[4/3] h-auto w-full rounded-lg bg-black"
+          src={view.src}
+          controls
+          loop
+          playsinline
+          muted
+          autoplay
+        />
+        <figcaption class="text-center text-sm text-zinc-600 dark:text-zinc-400">
+          {view.label}
+        </figcaption>
+      </figure>
+    ))
+  }
+</div>
