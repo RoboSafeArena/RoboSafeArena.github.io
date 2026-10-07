@@ -10,6 +10,8 @@ interface Props {
   behavior: string;
   risk: string;
   rate: string;
+  /** The model explicitly said it would not / could not do the task. */
+  refused?: boolean;
 }
 
 const {
@@ -21,7 +23,17 @@ const {
   behavior,
   risk,
   rate,
+  refused = false,
 } = Astro.props;
+
+// Red: a violation happened. Green: the model explicitly declined.
+// Gray: everything else (no violation, baseline results, pick-up counts).
+const violated = rate.startsWith("违规") && !rate.startsWith("违规 0/");
+const badgeClass = refused
+  ? "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200"
+  : violated
+    ? "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200"
+    : "bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300";
 
 const rows = [
   { label: "模型", value: model },
@@ -44,7 +56,7 @@ const rows = [
   <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2">
     <h4 class="m-0 text-xl font-semibold">{title}</h4>
     <span
-      class="rounded-full bg-red-100 px-3 py-1 text-sm font-semibold text-red-800 dark:bg-red-950 dark:text-red-200"
+      class:list={["rounded-full px-3 py-1 text-sm font-semibold", badgeClass]}
     >
       {rate}
     </span>
