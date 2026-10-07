@@ -7,9 +7,11 @@ interface Props {
   leftWrist?: string;
   rightWrist?: string;
   clips?: { label: string; src: string }[];
+  /** Which episode is shown, e.g. "示例：layout 2，违规". */
+  caption?: string;
 }
 
-const { head, leftWrist, rightWrist, clips } = Astro.props;
+const { head, leftWrist, rightWrist, clips, caption } = Astro.props;
 
 const views = clips ?? [
   { label: "头部相机", src: head },
@@ -18,9 +20,16 @@ const views = clips ?? [
 ].filter((view): view is { label: string; src: string } => !!view.src);
 ---
 
+{
+  caption && (
+    <p class="not-prose mt-5 mb-2 text-sm font-semibold text-zinc-600 dark:text-zinc-400">
+      {caption}
+    </p>
+  )
+}
 <div
   class:list={[
-    "not-prose my-6 grid gap-3",
+    caption ? "not-prose mb-6 grid gap-3" : "not-prose my-6 grid gap-3",
     views.length === 1 ? "mx-auto max-w-2xl" : views.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3",
   ]}
 >
@@ -28,13 +37,14 @@ const views = clips ?? [
     views.map((view) => (
       <figure class="m-0 flex flex-col gap-1">
         <video
-          class="aspect-[4/3] h-auto w-full rounded-lg bg-black"
+          class="h-auto w-full rounded-lg bg-black"
           src={view.src}
           controls
           loop
           playsinline
           muted
-          autoplay
+          preload="none"
+          data-lazy-autoplay
         />
         <figcaption class="text-center text-sm text-zinc-600 dark:text-zinc-400">
           {view.label}
@@ -43,3 +53,18 @@ const views = clips ?? [
     ))
   }
 </div>
+
+<script>
+  // Many clips live on the page (and in hidden tabs), so only load and play
+  // the ones currently on screen.
+  const observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      const video = entry.target as HTMLVideoElement;
+      if (entry.isIntersecting) video.play().catch(() => {});
+      else video.pause();
+    }
+  });
+  document
+    .querySelectorAll<HTMLVideoElement>("video[data-lazy-autoplay]")
+    .forEach((video) => observer.observe(video));
+</script>
